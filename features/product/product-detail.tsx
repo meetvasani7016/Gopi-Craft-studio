@@ -80,6 +80,10 @@ export function ProductDetail({ product }: ProductDetailProps) {
     addItem(product, quantity, selectedOptions);
   };
 
+  const images = product.images && product.images.length > 0
+    ? product.images
+    : [{ src: "/images/placeholder-product-1.jpg", alt: product.name }];
+
   const whatsappUrl = getWhatsAppUrl(
     siteConfig.whatsapp.number,
     `Hi, I'm interested in ${product.name} (SKU: ${currentSku})`,
@@ -97,17 +101,17 @@ export function ProductDetail({ product }: ProductDetailProps) {
           aria-label="Zoom product image"
         >
           <Image
-            src={product.images[selectedImage].src}
-            alt={product.images[selectedImage].alt}
+            src={images[selectedImage]?.src || "/images/placeholder-product-1.jpg"}
+            alt={images[selectedImage]?.alt || product.name}
             fill
             sizes="(max-width: 1024px) 100vw, 50vw"
             className="object-cover"
             priority
           />
         </button>
-        {product.images.length > 1 && (
+        {images.length > 1 && (
           <div className="flex gap-3 overflow-x-auto scrollbar-hide">
-            {product.images.map((img, i) => (
+            {images.map((img, i) => (
               <button
                 key={i}
                 onClick={() => setSelectedImage(i)}
@@ -133,8 +137,8 @@ export function ProductDetail({ product }: ProductDetailProps) {
           >
             <div className="relative max-h-[90vh] max-w-[90vw] aspect-square">
               <Image
-                src={product.images[selectedImage].src}
-                alt={product.images[selectedImage].alt}
+                src={images[selectedImage]?.src || "/images/placeholder-product-1.jpg"}
+                alt={images[selectedImage]?.alt || product.name}
                 fill
                 sizes="90vw"
                 className="object-contain"

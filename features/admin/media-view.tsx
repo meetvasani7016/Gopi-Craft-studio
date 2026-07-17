@@ -236,17 +236,17 @@ export function MediaView() {
         </div>
 
         {/* Upload Button */}
-        <label className="relative inline-flex items-center justify-center gap-2 h-10 px-5 rounded-md bg-accent text-white hover:bg-accent/90 cursor-pointer font-semibold text-xs transition-colors">
+        <div className="relative h-10 px-5 rounded-md bg-accent text-white hover:bg-accent/90 font-semibold text-xs flex items-center justify-center gap-2 transition-colors">
           <Upload className="h-4 w-4" />
           {uploading && !replacingId ? "Uploading..." : "Upload Photo"}
           <input
             type="file"
             accept="image/*"
-            className="sr-only"
+            className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
             onChange={(e) => handleUpload(e)}
             disabled={uploading}
           />
-        </label>
+        </div>
       </div>
 
       {/* Folders & Search */}
@@ -305,20 +305,20 @@ export function MediaView() {
                     className="w-full h-full object-cover"
                   />
                   {/* Replace Image Button Overlay */}
-                  <label className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 flex items-center justify-center cursor-pointer transition-opacity text-white text-xs font-semibold gap-1.5">
+                  <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity text-white text-xs font-semibold gap-1.5">
                     <Upload className="h-4 w-4" />
                     Replace Image
                     <input 
                       type="file" 
                       accept="image/*" 
-                      className="hidden" 
+                      className="absolute inset-0 opacity-0 cursor-pointer w-full h-full" 
                       onChange={(e) => {
                         setReplacingId(file.id);
                         handleUpload(e, file.fileName);
                       }}
                       disabled={uploading}
                     />
-                  </label>
+                  </div>
                 </div>
 
                 {/* Info and Metadata editing */}
