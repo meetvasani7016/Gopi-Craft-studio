@@ -26,13 +26,19 @@ export function ProductCard({ product, className, priority = false }: ProductCar
   const inWishlist = isInWishlist(product.id);
   const primaryBadge = product.badges?.[0];
 
+  const mainImage = product.images?.[0] || {
+    src: "/images/placeholder-product-1.jpg",
+    alt: product.name,
+  };
+  const categoryName = product.category?.name || "Uncategorized";
+
   return (
     <article className={cn("group relative", className)}>
       <Link href={`/products/${product.slug}`} className="block" prefetch>
         <div className="relative aspect-[3/4] overflow-hidden rounded-lg bg-secondary">
           <Image
-            src={product.images[0].src}
-            alt={product.images[0].alt}
+            src={mainImage.src}
+            alt={mainImage.alt}
             fill
             sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
             className="object-cover transition-transform duration-700 ease-out group-hover:scale-105"
@@ -55,7 +61,7 @@ export function ProductCard({ product, className, priority = false }: ProductCar
 
         <div className="mt-4 space-y-1">
           <p className="text-xs uppercase tracking-wider text-text-muted">
-            {product.category.name}
+            {categoryName}
           </p>
           <h3 className="font-serif text-base leading-snug text-text group-hover:text-accent transition-colors">
             {product.name}

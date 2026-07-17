@@ -36,18 +36,23 @@ export function CartContent() {
   return (
     <div className="grid gap-8 lg:grid-cols-3">
       <div className="lg:col-span-2 space-y-4">
-        {cart.items.map((item) => (
-          <FadeIn key={item.id}>
-            <div className="flex gap-4 rounded-lg border border-border p-4">
-              <Link href={`/products/${item.product.slug}`} className="relative h-24 w-24 shrink-0 overflow-hidden rounded-md bg-secondary">
-                <Image
-                  src={item.product.images[0].src}
-                  alt={item.product.images[0].alt}
-                  fill
-                  sizes="96px"
-                  className="object-cover"
-                />
-              </Link>
+        {cart.items.map((item) => {
+          const itemImage = item.product.images?.[0] || {
+            src: "/images/placeholder-product-1.jpg",
+            alt: item.product.name,
+          };
+          return (
+            <FadeIn key={item.id}>
+              <div className="flex gap-4 rounded-lg border border-border p-4">
+                <Link href={`/products/${item.product.slug}`} className="relative h-24 w-24 shrink-0 overflow-hidden rounded-md bg-secondary">
+                  <Image
+                    src={itemImage.src}
+                    alt={itemImage.alt}
+                    fill
+                    sizes="96px"
+                    className="object-cover"
+                  />
+                </Link>
               <div className="flex flex-1 flex-col justify-between">
                 <div>
                   <Link href={`/products/${item.product.slug}`} className="font-serif text-sm hover:text-accent transition-colors">
@@ -84,7 +89,8 @@ export function CartContent() {
               </div>
             </div>
           </FadeIn>
-        ))}
+        );
+      })}
       </div>
 
       {/* Summary */}

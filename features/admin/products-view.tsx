@@ -674,7 +674,7 @@ export function ProductsView({ products, categories, onRefresh }: ProductsViewPr
                   <tr key={p.id} className="hover:bg-secondary/10 transition-colors">
                     <td className="p-4">
                       <div className="h-10 w-10 rounded border border-border bg-secondary overflow-hidden">
-                        {p.images[0]?.src ? (
+                        {p.images?.[0]?.src ? (
                           <img src={p.images[0].src} alt="" className="h-full w-full object-cover" />
                         ) : (
                           <ImageIcon className="h-5 w-5 text-text-light mx-auto my-2.5" />

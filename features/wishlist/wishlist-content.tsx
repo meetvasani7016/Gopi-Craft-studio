@@ -36,44 +36,50 @@ export function WishlistContent() {
 
   return (
     <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4 md:gap-6">
-      {items.map((item) => (
-        <FadeIn key={item.id}>
-          <div className="group relative">
-            <Link href={`/products/${item.product.slug}`} className="block">
-              <div className="relative aspect-[3/4] overflow-hidden rounded-lg bg-secondary">
-                <Image
-                  src={item.product.images[0].src}
-                  alt={item.product.images[0].alt}
-                  fill
-                  sizes="(max-width: 640px) 50vw, 25vw"
-                  className="object-cover transition-transform duration-500 group-hover:scale-105"
-                />
+      {items.map((item) => {
+        const itemImage = item.product.images?.[0] || {
+          src: "/images/placeholder-product-1.jpg",
+          alt: item.product.name,
+        };
+        return (
+          <FadeIn key={item.id}>
+            <div className="group relative">
+              <Link href={`/products/${item.product.slug}`} className="block">
+                <div className="relative aspect-[3/4] overflow-hidden rounded-lg bg-secondary">
+                  <Image
+                    src={itemImage.src}
+                    alt={itemImage.alt}
+                    fill
+                    sizes="(max-width: 640px) 50vw, 25vw"
+                    className="object-cover transition-transform duration-500 group-hover:scale-105"
+                  />
+                </div>
+                <h3 className="mt-3 font-serif text-sm">{item.product.name}</h3>
+                <p className="text-sm font-medium">{formatPrice(item.product.price.amount)}</p>
+              </Link>
+              <div className="mt-3 flex gap-2">
+                <Button
+                  size="sm"
+                  variant="default"
+                  className="flex-1"
+                  onClick={() => addItem(item.product)}
+                >
+                  <ShoppingBag className="h-3.5 w-3.5" />
+                  Add to Cart
+                </Button>
+                <Button
+                  size="icon-sm"
+                  variant="outline"
+                  onClick={() => removeItem(item.productId)}
+                  aria-label={`Remove ${item.product.name} from wishlist`}
+                >
+                  <Trash2 className="h-3.5 w-3.5" />
+                </Button>
               </div>
-              <h3 className="mt-3 font-serif text-sm">{item.product.name}</h3>
-              <p className="text-sm font-medium">{formatPrice(item.product.price.amount)}</p>
-            </Link>
-            <div className="mt-3 flex gap-2">
-              <Button
-                size="sm"
-                variant="default"
-                className="flex-1"
-                onClick={() => addItem(item.product)}
-              >
-                <ShoppingBag className="h-3.5 w-3.5" />
-                Add to Cart
-              </Button>
-              <Button
-                size="icon-sm"
-                variant="outline"
-                onClick={() => removeItem(item.productId)}
-                aria-label={`Remove ${item.product.name} from wishlist`}
-              >
-                <Trash2 className="h-3.5 w-3.5" />
-              </Button>
             </div>
-          </div>
-        </FadeIn>
-      ))}
+          </FadeIn>
+        );
+      })}
     </div>
   );
 }
