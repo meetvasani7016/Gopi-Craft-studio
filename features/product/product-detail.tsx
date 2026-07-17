@@ -97,7 +97,7 @@ export function ProductDetail({ product }: ProductDetailProps) {
       <div className="space-y-4">
         <button
           onClick={() => setZoomOpen(true)}
-          className="relative aspect-square overflow-hidden rounded-lg bg-secondary cursor-zoom-in"
+          className="relative w-full aspect-square overflow-hidden rounded-lg bg-secondary cursor-zoom-in"
           aria-label="Zoom product image"
         >
           <Image
