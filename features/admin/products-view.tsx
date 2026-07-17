@@ -9,6 +9,7 @@ import {
   saveProductVariants
 } from "@/lib/supabase/actions";
 import { formatPrice } from "@/lib/utils";
+import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -253,6 +254,8 @@ export function ProductsView({ products, categories, onRefresh }: ProductsViewPr
     setImageUrl("");
   };
 
+  const [uploadingImage, setUploadingImage] = useState(false);
+
   const removeImage = (index: number) => {
     const currentImages = editingProduct?.images || [];
     setEditingProduct((prev) => 
@@ -263,6 +266,54 @@ export function ProductsView({ products, categories, onRefresh }: ProductsViewPr
           } 
         : null
     );
+  };
+
+  const handleDirectUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setUploadingImage(true);
+    try {
+      const supabase = createClient();
+      const fileName = `${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.-]/g, "_")}`;
+      const filePath = `Products/${fileName}`;
+
+      // 1. Upload to Supabase Storage in "media" bucket under "Products" folder
+      const { error: uploadError } = await supabase.storage.from("media").upload(filePath, file, {
+        cacheControl: "3600",
+        upsert: true
+      });
+
+      if (uploadError) throw uploadError;
+
+      // 2. Get Public URL
+      const publicUrl = supabase.storage.from("media").getPublicUrl(filePath).data.publicUrl;
+
+      // 3. Add to media_library metadata table
+      await supabase.from("media_library").insert({
+        name: file.name,
+        file_path: filePath,
+        file_size: file.size,
+        mime_type: file.type,
+        folder_name: "Products",
+        alt_text: editingProduct?.name || ""
+      });
+
+      // 4. Append to editingProduct images array
+      const currentImages = editingProduct?.images || [];
+      setEditingProduct((prev) => 
+        prev 
+          ? { 
+              ...prev, 
+              images: [...currentImages, { src: publicUrl, alt: prev.name || "Product Image" }] 
+            } 
+          : null
+      );
+    } catch (err: any) {
+      alert("Image upload failed: " + err.message);
+    } finally {
+      setUploadingImage(false);
+    }
   };
 
   return (
@@ -431,18 +482,31 @@ export function ProductsView({ products, categories, onRefresh }: ProductsViewPr
                 ))}
               </div>
 
-              <div className="flex gap-2">
+              <div className="flex gap-2 flex-wrap items-center">
                 <input
                   type="text"
-                  placeholder="Paste Image URL here (or upload via Media tab first)"
+                  placeholder="Paste Image URL here..."
                   value={imageUrl}
                   onChange={(e) => setImageUrl(e.target.value)}
-                  className="flex-1 h-11 px-3 border border-border rounded-md bg-primary text-sm focus:outline-none"
+                  className="flex-1 min-w-[200px] h-11 px-3 border border-border rounded-md bg-primary text-sm focus:outline-none"
                 />
-                <Button type="button" variant="outline" onClick={addImage}>
+                <Button type="button" variant="outline" onClick={addImage} className="h-11">
                   <Plus className="h-4 w-4 mr-2" />
-                  Add Photo
+                  Add URL
                 </Button>
+                
+                {/* Direct Upload Button */}
+                <div className="relative h-11 px-4 rounded-md bg-accent text-white hover:bg-accent/90 font-semibold text-xs flex items-center justify-center gap-2 cursor-pointer transition-colors shadow">
+                  <Upload className="h-4 w-4" />
+                  {uploadingImage ? "Uploading..." : "Upload Photo"}
+                  <input
+                    type="file"
+                    accept="image/*"
+                    className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
+                    onChange={handleDirectUpload}
+                    disabled={uploadingImage}
+                  />
+                </div>
               </div>
             </div>
 
