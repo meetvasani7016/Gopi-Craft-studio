@@ -22,7 +22,7 @@ async function logActivity(action: string, resourceId: string, details: any = {}
 }
 
 export async function fetchProducts() {
-  return await queries.getProducts();
+  return await queries.getProducts(true);
 }
 
 export async function fetchCategories() {
@@ -475,7 +475,8 @@ export async function saveProduct(product: any) {
       specs: product.specs || [],
       shipping_info: product.shipping || { estimatedDays: "5-7 business days", freeAbove: 2999, methods: [] },
       faqs: product.faqs || [],
-      related_product_ids: product.relatedProductIds || []
+      related_product_ids: product.relatedProductIds || [],
+      status: product.status || "published"
     };
 
     if (product.id) {

@@ -30,7 +30,7 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
   const category = await getCategoryBySlug(slug);
   if (!category) notFound();
 
-  const allProducts = await getProducts();
+  const allProducts = await getProducts(true);
   const products = allProducts.filter((p) => p.category.slug === slug);
 
   return (

@@ -13,7 +13,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import type { Product, Category, DbProductVariant } from "@/types";
-import { Plus, Trash, Edit, ArrowLeft, Image as ImageIcon, Save, ToggleLeft, ToggleRight, Download, Upload } from "lucide-react";
+import { Plus, Trash, Edit, ArrowLeft, Image as ImageIcon, Save, ToggleLeft, ToggleRight, Download, Upload, Copy } from "lucide-react";
 
 interface ProductFormState extends Partial<Product> {
   categoryId?: string;
@@ -166,7 +166,34 @@ export function ProductsView({ products, categories, onRefresh }: ProductsViewPr
       faqs: [],
       relatedProductIds: [],
       variantsDefinition: [],
-      variants: []
+      variants: [],
+      status: "published"
+    } as any);
+  };
+
+  const handleDuplicate = (p: Product) => {
+    setEditingProduct({
+      name: `${p.name} - Copy`,
+      slug: `${p.slug}-copy`,
+      shortDescription: p.shortDescription,
+      description: p.description,
+      price: { amount: p.price.amount, currency: p.price.currency, compareAt: p.price.compareAt },
+      images: [...p.images],
+      categoryId: p.category.id,
+      tags: [...p.tags],
+      badges: p.badges ? [...p.badges] : [],
+      inStock: p.inStock,
+      stockCount: p.stockCount || 0,
+      sku: p.sku ? `${p.sku}-COPY` : "",
+      material: p.material,
+      occasion: p.occasion ? [...p.occasion] : [],
+      customizable: p.customizable,
+      specs: p.specs ? [...p.specs] : [],
+      faqs: p.faqs ? [...p.faqs] : [],
+      relatedProductIds: p.relatedProductIds ? [...p.relatedProductIds] : [],
+      variantsDefinition: p.variantsDefinition ? [...p.variantsDefinition] : [],
+      variants: p.variants ? p.variants.map(v => ({ ...v, id: "", sku: v.sku ? `${v.sku}-COPY` : "" })) : [],
+      status: "draft"
     } as any);
   };
 
@@ -328,7 +355,7 @@ export function ProductsView({ products, categories, onRefresh }: ProductsViewPr
               />
             </div>
 
-            <div className="flex gap-6 items-center">
+            <div className="flex flex-wrap gap-6 items-center">
               <button
                 type="button"
                 onClick={() => setEditingProduct(prev => prev ? { ...prev, inStock: !prev.inStock } : null)}
@@ -352,7 +379,20 @@ export function ProductsView({ products, categories, onRefresh }: ProductsViewPr
                 ) : (
                   <ToggleLeft className="h-7 w-7 text-text-light" />
                 )}
-                Supports Custom Engravings / Requests
+                Supports Custom Requests
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setEditingProduct(prev => prev ? { ...prev, status: prev.status === "draft" ? "published" : "draft" } : null)}
+                className="flex items-center gap-2 text-sm font-semibold text-text-muted hover:text-text"
+              >
+                {editingProduct.status === "published" || !editingProduct.status ? (
+                  <ToggleRight className="h-7 w-7 text-accent" />
+                ) : (
+                  <ToggleLeft className="h-7 w-7 text-text-light" />
+                )}
+                Published (Visible to Customers)
               </button>
             </div>
 
@@ -625,6 +665,7 @@ export function ProductsView({ products, categories, onRefresh }: ProductsViewPr
                   <th className="p-4">Category</th>
                   <th className="p-4">Price</th>
                   <th className="p-4">Stock</th>
+                  <th className="p-4">Status</th>
                   <th className="p-4 text-right">Actions</th>
                 </tr>
               </thead>
@@ -656,11 +697,27 @@ export function ProductsView({ products, categories, onRefresh }: ProductsViewPr
                         <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">In Stock ({p.stockCount})</span>
                       )}
                     </td>
+                    <td className="p-4">
+                      {p.status === "draft" ? (
+                        <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-gray-100 text-gray-700 border border-gray-200">Draft</span>
+                      ) : (
+                        <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">Published</span>
+                      )}
+                    </td>
                     <td className="p-4 text-right space-x-2">
+                      <button
+                        onClick={() => handleDuplicate(p)}
+                        className="h-9 w-9 rounded-md border border-border flex items-center justify-center hover:bg-accent/10 hover:border-accent/40 text-text-muted hover:text-accent transition-all inline-flex"
+                        aria-label="Duplicate"
+                        title="Duplicate Product"
+                      >
+                        <Copy className="h-4 w-4" />
+                      </button>
                       <button
                         onClick={() => handleEdit(p)}
                         className="h-9 w-9 rounded-md border border-border flex items-center justify-center hover:bg-accent/10 hover:border-accent/40 text-text-muted hover:text-accent transition-all inline-flex"
                         aria-label="Edit"
+                        title="Edit Product"
                       >
                         <Edit className="h-4 w-4" />
                       </button>
@@ -668,6 +725,7 @@ export function ProductsView({ products, categories, onRefresh }: ProductsViewPr
                         onClick={() => handleDelete(p.id)}
                         className="h-9 w-9 rounded-md border border-border flex items-center justify-center hover:bg-error/10 hover:border-error/40 text-text-muted hover:text-error transition-all inline-flex"
                         aria-label="Delete"
+                        title="Delete Product"
                       >
                         <Trash className="h-4 w-4" />
                       </button>

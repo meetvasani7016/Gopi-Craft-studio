@@ -1,19 +1,39 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { Search } from "lucide-react";
 import { ProductCard } from "@/components/shared/product-card";
-import { searchAll } from "@/lib/shop";
 import { Input } from "@/components/ui/input";
 import { useDebounce } from "@/hooks/use-media-query";
+import { fetchProducts } from "@/lib/supabase/actions";
+import { Product } from "@/types";
 
 export function SearchContent() {
   const [query, setQuery] = useState("");
   const debouncedQuery = useDebounce(query, 300);
   const router = useRouter();
+  
+  const [allProducts, setAllProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const results = debouncedQuery.length >= 2 ? searchAll(debouncedQuery) : null;
+  useEffect(() => {
+    fetchProducts().then((res) => {
+      setAllProducts(res || []);
+      setLoading(false);
+    });
+  }, []);
+
+  const results = useMemo(() => {
+    if (debouncedQuery.length < 2) return null;
+    const q = debouncedQuery.toLowerCase();
+    return allProducts.filter(
+      (p) =>
+        p.name.toLowerCase().includes(q) ||
+        p.shortDescription.toLowerCase().includes(q) ||
+        p.tags.some((t) => t.toLowerCase().includes(q))
+    );
+  }, [debouncedQuery, allProducts]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -40,19 +60,21 @@ export function SearchContent() {
           />
         </form>
 
-        {results && (
+        {loading ? (
+          <p className="text-center text-text-muted py-8">Loading catalog...</p>
+        ) : results && (
           <div className="mt-10" role="region" aria-label="Search results">
-            {results.products.length === 0 ? (
+            {results.length === 0 ? (
               <p className="text-center text-text-muted py-8">
                 No results for &ldquo;{debouncedQuery}&rdquo;
               </p>
             ) : (
               <>
                 <p className="text-sm text-text-muted mb-6">
-                  {results.products.length} results for &ldquo;{debouncedQuery}&rdquo;
+                  {results.length} {results.length === 1 ? "result" : "results"} for &ldquo;{debouncedQuery}&rdquo;
                 </p>
                 <div className="grid grid-cols-2 gap-4 md:grid-cols-3 md:gap-6">
-                  {results.products.map((product) => (
+                  {results.map((product) => (
                     <ProductCard key={product.id} product={product} />
                   ))}
                 </div>

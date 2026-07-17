@@ -112,6 +112,7 @@ export interface Product {
   shipping: ShippingInfo;
   faqs: FAQItem[];
   relatedProductIds: string[];
+  status?: "published" | "draft";
   createdAt: string;
   updatedAt: string;
 }

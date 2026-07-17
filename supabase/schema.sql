@@ -159,6 +159,7 @@ CREATE TABLE products (
     shipping_info JSONB DEFAULT '{}'::jsonb,
     faqs JSONB DEFAULT '[]'::jsonb,
     related_product_ids UUID[] DEFAULT '{}',
+    status VARCHAR(20) DEFAULT 'published' CHECK (status IN ('published', 'draft')),
     created_at TIMESTAMPTZ DEFAULT NOW(),
     updated_at TIMESTAMPTZ DEFAULT NOW()
 );

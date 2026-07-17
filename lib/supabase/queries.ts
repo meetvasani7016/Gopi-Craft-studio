@@ -324,7 +324,7 @@ export async function getHomepageSections(): Promise<HomeSection[]> {
     if (error || !data || data.length === 0) throw new Error(error?.message || "No sections");
 
     // Fetch dependencies for sections (products & categories)
-    const productsList = await getProducts();
+    const productsList = await getProducts(true);
     const categoriesList = await getCategories();
 
     return data.map(section => {
@@ -470,16 +470,22 @@ export async function getCategoryBySlug(slug: string): Promise<Category | null> 
 }
 
 // 8. Products
-export async function getProducts(): Promise<Product[]> {
+export async function getProducts(onlyPublished = false): Promise<Product[]> {
   if (!isSupabaseConfigured()) {
-    return mockProducts;
+    return onlyPublished ? mockProducts.filter(p => p.status !== "draft") : mockProducts;
   }
 
   try {
     const supabase = await createClient();
-    const { data, error } = await supabase
+    let dbQuery = supabase
       .from("products")
       .select("*, categories(*), product_variants(*)");
+
+    if (onlyPublished) {
+      dbQuery = dbQuery.eq("status", "published");
+    }
+
+    const { data, error } = await dbQuery;
 
     if (error || !data) throw new Error(error?.message || "No products");
 
@@ -532,6 +538,7 @@ export async function getProducts(): Promise<Product[]> {
       shipping: typeof item.shipping_info === "string" ? JSON.parse(item.shipping_info) : (item.shipping_info || { estimatedDays: "5-7 business days", freeAbove: 2999, methods: [] }),
       faqs: typeof item.faqs === "string" ? JSON.parse(item.faqs) : (item.faqs || []),
       relatedProductIds: item.related_product_ids || [],
+      status: item.status || "published",
       createdAt: item.created_at,
       updatedAt: item.updated_at
     }));
@@ -542,12 +549,12 @@ export async function getProducts(): Promise<Product[]> {
 }
 
 export async function getProductBySlug(slug: string): Promise<Product | null> {
-  const list = await getProducts();
+  const list = await getProducts(true);
   return list.find(p => p.slug === slug) || null;
 }
 
 export async function getRelatedProducts(product: Product): Promise<Product[]> {
-  const list = await getProducts();
+  const list = await getProducts(true);
   return list
     .filter(p => p.id !== product.id && (p.category.slug === product.category.slug || p.tags.some(t => product.tags.includes(t))))
     .slice(0, 4);

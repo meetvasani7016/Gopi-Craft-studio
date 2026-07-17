@@ -96,13 +96,14 @@ export function CategoriesManager({ categories, onRefresh }: CategoriesManagerPr
     if (!editing) return;
     setLoading(true);
     
+    const record = { ...editing };
     // Auto-slug
-    if (!editing.slug) {
-      editing.slug = editing.name.toLowerCase().replace(/[^a-z0-9]+/g, "-");
+    if (!record.slug) {
+      record.slug = record.name.toLowerCase().replace(/[^a-z0-9]+/g, "-");
     }
 
     try {
-      const res = await saveCategory(editing);
+      const res = await saveCategory(record);
       if (res.success) {
         onRefresh();
         setEditing(null);
@@ -266,12 +267,13 @@ export function BlogsManager({ blogs, onRefresh }: BlogsManagerProps) {
     if (!editing) return;
     setLoading(true);
     
-    if (!editing.slug) {
-      editing.slug = editing.title.toLowerCase().replace(/[^a-z0-9]+/g, "-");
+    const record = { ...editing };
+    if (!record.slug) {
+      record.slug = record.title.toLowerCase().replace(/[^a-z0-9]+/g, "-");
     }
 
     try {
-      const res = await saveBlog(editing);
+      const res = await saveBlog(record);
       if (res.success) {
         onRefresh();
         setEditing(null);
