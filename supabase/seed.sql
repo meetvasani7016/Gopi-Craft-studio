@@ -1,12 +1,14 @@
 -- Gopi Craft-Studio Comprehensive Demo Seeding Script
 
 -- 1. Seed theme_settings
-INSERT INTO public.theme_settings (primary_color, accent_color, fonts, logo_text, border_radius, button_style, active)
-VALUES ('#ffffff', '#c4a265', '{"serif": "Playfair Display", "sans": "Inter"}'::jsonb, 'Gopi Craft-Studio', '0.5rem', 'default', TRUE);
+INSERT INTO public.theme_settings (id, primary_color, accent_color, fonts, logo_text, border_radius, button_style, active)
+VALUES ('00000000-0000-0000-0000-000000000001', '#ffffff', '#c4a265', '{"serif": "Playfair Display", "sans": "Inter"}'::jsonb, 'Gopi Craft-Studio', '0.5rem', 'default', TRUE)
+ON CONFLICT (id) DO NOTHING;
 
 -- 2. Seed website_settings
-INSERT INTO public.website_settings (announcement_text, announcement_visible, whatsapp_number, whatsapp_message, instagram_handle, email, phone, free_shipping_threshold)
-VALUES ('Free shipping on orders above ₹2,999', TRUE, '+918733844948', 'Hello! I am interested in your products.', 'gopicraftstudio_38', 'hello@gopicraftstudio.com', '+91 8733844948', 2999);
+INSERT INTO public.website_settings (id, announcement_text, announcement_visible, whatsapp_number, whatsapp_message, instagram_handle, email, phone, free_shipping_threshold)
+VALUES ('00000000-0000-0000-0000-000000000001', 'Free shipping on orders above ₹2,999', TRUE, '+918733844948', 'Hello! I am interested in your products.', 'gopicraftstudio_38', 'hello@gopicraftstudio.com', '+91 8733844948', 2999)
+ON CONFLICT (id) DO NOTHING;
 
 -- 3. Seed SEO settings
 INSERT INTO public.seo_settings (page_path, title, description, keywords, og_image) VALUES
@@ -14,13 +16,15 @@ INSERT INTO public.seo_settings (page_path, title, description, keywords, og_ima
 ('/about', 'About Us | Gopi Craft-Studio', 'Our story of preserving Indian craftsmanship for modern homes.', ARRAY['about', 'heritage', 'craftsmanship', 'artisans'], '/images/placeholder-about.jpg'),
 ('/contact', 'Contact Us | Gopi Craft-Studio', 'Get in touch for custom orders, bulk inquiries, or support.', ARRAY['contact', 'email', 'support', 'whatsapp'], NULL),
 ('/faq', 'Frequently Asked Questions | Gopi Craft-Studio', 'Find answers to common questions about our products, shipping, returns, and more.', ARRAY['faq', 'shipping', 'returns', 'payments'], NULL),
-('/shop', 'Shop All Products | Gopi Craft-Studio', 'Browse our complete collection of handcrafted Indian decor, temple essentials, and artisan gifts.', ARRAY['shop', 'handicrafts', 'buy brass', 'indian art'], NULL);
+('/shop', 'Shop All Products | Gopi Craft-Studio', 'Browse our complete collection of handcrafted Indian decor, temple essentials, and artisan gifts.', ARRAY['shop', 'handicrafts', 'buy brass', 'indian art'], NULL)
+ON CONFLICT (page_path) DO NOTHING;
 
 -- 4. Seed categories
 INSERT INTO public.categories (id, slug, name, description, featured, seo_title, seo_description) VALUES
 ('c1a11111-1111-1111-1111-111111111111', 'temple-decor', 'Temple Decor', 'Sacred pieces for your home sanctuary, crafted with reverence.', TRUE, 'Temple Decor | Gopi Craft-Studio', 'Sacred pieces for your home sanctuary, crafted with reverence.'),
 ('c2a22222-2222-2222-2222-222222222222', 'home-decor', 'Home Decor', 'Heritage statements that blend seamlessly with modern aesthetics.', TRUE, 'Home Decor | Gopi Craft-Studio', 'Heritage statements that blend seamlessly with modern aesthetics.'),
-('c3a33333-3333-3333-3333-333333333333', 'wedding-gifts', 'Wedding & Gifting', 'Memorable tokens of blessings for your loved ones.', TRUE, 'Wedding & Gifting | Gopi Craft-Studio', 'Memorable tokens of blessings for your loved ones.');
+('c3a33333-3333-3333-3333-333333333333', 'wedding-gifts', 'Wedding & Gifting', 'Memorable tokens of blessings for your loved ones.', TRUE, 'Wedding & Gifting | Gopi Craft-Studio', 'Memorable tokens of blessings for your loved ones.')
+ON CONFLICT (id) DO NOTHING;
 
 -- 5. Seed products
 INSERT INTO public.products (id, slug, name, short_description, description, price_amount, price_compare_at, images, category_id, tags, badges, rating, review_count, in_stock, stock_count, reserved_stock, low_stock_threshold, sku, material, customizable, customization_options, specs, variants_definition) VALUES
