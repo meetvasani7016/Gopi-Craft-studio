@@ -1,7 +1,7 @@
 "use server";
 
 import * as queries from "./queries";
-import { createClient } from "./server";
+import { createClient, createAdminClient } from "./server";
 
 async function logActivity(action: string, resourceId: string, details: any = {}) {
   try {
@@ -1281,8 +1281,11 @@ export async function uploadMediaAction(formData: FormData) {
     const arrayBuffer = await file.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
 
-    // Upload to Supabase Storage using authenticated server client
-    const { error: uploadError } = await supabase.storage
+    // Bypass client-side RLS by executing database actions via the service-role client
+    const adminSupabase = createAdminClient();
+
+    // Upload to Supabase Storage using admin service client
+    const { error: uploadError } = await adminSupabase.storage
       .from("media")
       .upload(filePath, buffer, {
         contentType: file.type,
@@ -1293,16 +1296,16 @@ export async function uploadMediaAction(formData: FormData) {
     if (uploadError) throw uploadError;
 
     // Get public URL
-    const publicUrl = supabase.storage.from("media").getPublicUrl(filePath).data.publicUrl;
+    const publicUrl = adminSupabase.storage.from("media").getPublicUrl(filePath).data.publicUrl;
 
-    // Save/update metadata
+    // Save/update metadata via admin service client
     if (replaceFileName) {
-      await supabase
+      await adminSupabase
         .from("media_library")
         .update({ file_size: file.size })
         .eq("file_path", filePath);
     } else {
-      await supabase.from("media_library").insert({
+      await adminSupabase.from("media_library").insert({
         name: file.name,
         file_path: filePath,
         file_size: file.size,
