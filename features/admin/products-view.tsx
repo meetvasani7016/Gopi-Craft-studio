@@ -6,10 +6,10 @@ import {
   deleteProduct, 
   exportProductsCSV, 
   importProductsCSV,
-  saveProductVariants
+  saveProductVariants,
+  uploadMediaAction
 } from "@/lib/supabase/actions";
 import { formatPrice } from "@/lib/utils";
-import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -274,38 +274,22 @@ export function ProductsView({ products, categories, onRefresh }: ProductsViewPr
 
     setUploadingImage(true);
     try {
-      const supabase = createClient();
-      const fileName = `${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.-]/g, "_")}`;
-      const filePath = `Products/${fileName}`;
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("folder", "Products");
 
-      // 1. Upload to Supabase Storage in "media" bucket under "Products" folder
-      const { error: uploadError } = await supabase.storage.from("media").upload(filePath, file, {
-        cacheControl: "3600",
-        upsert: true
-      });
+      const res = await uploadMediaAction(formData);
+      if (!res.success) {
+        throw new Error(res.error);
+      }
 
-      if (uploadError) throw uploadError;
-
-      // 2. Get Public URL
-      const publicUrl = supabase.storage.from("media").getPublicUrl(filePath).data.publicUrl;
-
-      // 3. Add to media_library metadata table
-      await supabase.from("media_library").insert({
-        name: file.name,
-        file_path: filePath,
-        file_size: file.size,
-        mime_type: file.type,
-        folder_name: "Products",
-        alt_text: editingProduct?.name || ""
-      });
-
-      // 4. Append to editingProduct images array
+      // Append to editingProduct images array
       const currentImages = editingProduct?.images || [];
       setEditingProduct((prev) => 
         prev 
           ? { 
               ...prev, 
-              images: [...currentImages, { src: publicUrl, alt: prev.name || "Product Image" }] 
+              images: [...currentImages, { src: res.url!, alt: prev.name || "Product Image" }] 
             } 
           : null
       );

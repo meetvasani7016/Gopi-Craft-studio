@@ -1247,4 +1247,76 @@ export async function setupSuperAdmin(data: any) {
   }
 }
 
+export async function uploadMediaAction(formData: FormData) {
+  try {
+    const supabase = await createClient();
+    
+    // Verify admin role authorization
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      return { success: false, error: "Not authenticated" };
+    }
+
+    const { data: profile } = await supabase
+      .from("admin_users")
+      .select("role")
+      .eq("id", user.id)
+      .single();
+
+    if (!profile || !["super_admin", "admin", "editor"].includes(profile.role)) {
+      return { success: false, error: "Not authorized as admin" };
+    }
+
+    const file = formData.get("file") as File;
+    if (!file) {
+      return { success: false, error: "No file provided" };
+    }
+
+    const folder = formData.get("folder") as string || "Products";
+    const replaceFileName = formData.get("replaceFileName") as string;
+    const fileName = replaceFileName || `${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.-]/g, "_")}`;
+    const filePath = `${folder}/${fileName}`;
+
+    // Convert file to buffer
+    const arrayBuffer = await file.arrayBuffer();
+    const buffer = Buffer.from(arrayBuffer);
+
+    // Upload to Supabase Storage using authenticated server client
+    const { error: uploadError } = await supabase.storage
+      .from("media")
+      .upload(filePath, buffer, {
+        contentType: file.type,
+        cacheControl: "3600",
+        upsert: true
+      });
+
+    if (uploadError) throw uploadError;
+
+    // Get public URL
+    const publicUrl = supabase.storage.from("media").getPublicUrl(filePath).data.publicUrl;
+
+    // Save/update metadata
+    if (replaceFileName) {
+      await supabase
+        .from("media_library")
+        .update({ file_size: file.size })
+        .eq("file_path", filePath);
+    } else {
+      await supabase.from("media_library").insert({
+        name: file.name,
+        file_path: filePath,
+        file_size: file.size,
+        mime_type: file.type,
+        folder_name: folder,
+        alt_text: ""
+      });
+    }
+
+    return { success: true, url: publicUrl, fileName };
+  } catch (err: any) {
+    console.error("Server Action upload error:", err);
+    return { success: false, error: err.message };
+  }
+}
+
 

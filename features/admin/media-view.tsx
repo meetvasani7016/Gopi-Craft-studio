@@ -8,6 +8,7 @@ import {
   Folder, Upload, Trash, Search, Copy, Check, 
   FileImage, Edit2, Save, X, RefreshCw 
 } from "lucide-react";
+import { uploadMediaAction } from "@/lib/supabase/actions";
 
 export function MediaView() {
   const [files, setFiles] = useState<any[]>([]);
@@ -118,32 +119,16 @@ export function MediaView() {
 
     setUploading(true);
     try {
-      const fileName = replaceFileName || `${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.-]/g, "_")}`;
-      const filePath = `${folder}/${fileName}`;
-
-      // Upload/replace object in bucket
-      const { error: uploadError } = await supabase.storage.from("media").upload(filePath, file, {
-        cacheControl: "3600",
-        upsert: true // enables overwrite replacement
-      });
-
-      if (uploadError) throw uploadError;
-
-      // Update metadata table
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("folder", folder);
       if (replaceFileName) {
-        await supabase
-          .from("media_library")
-          .update({ file_size: file.size })
-          .eq("file_path", filePath);
-      } else {
-        await supabase.from("media_library").insert({
-          name: file.name,
-          file_path: filePath,
-          file_size: file.size,
-          mime_type: file.type,
-          folder_name: folder,
-          alt_text: ""
-        });
+        formData.append("replaceFileName", replaceFileName);
+      }
+
+      const res = await uploadMediaAction(formData);
+      if (!res.success) {
+        throw new Error(res.error);
       }
 
       loadMedia();
