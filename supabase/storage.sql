@@ -17,11 +17,7 @@ ON storage.objects
 FOR INSERT 
 TO authenticated 
 WITH CHECK (
-  bucket_id = 'media' AND 
-  EXISTS (
-    SELECT 1 FROM public.admin_users 
-    WHERE id = auth.uid() AND role IN ('super_admin', 'admin', 'editor')
-  )
+  bucket_id = 'media' AND public.is_admin()
 );
 
 -- 4. Restrict update access to authenticated admins only
@@ -30,18 +26,10 @@ ON storage.objects
 FOR UPDATE 
 TO authenticated 
 USING (
-  bucket_id = 'media' AND 
-  EXISTS (
-    SELECT 1 FROM public.admin_users 
-    WHERE id = auth.uid() AND role IN ('super_admin', 'admin', 'editor')
-  )
+  bucket_id = 'media' AND public.is_admin()
 ) 
 WITH CHECK (
-  bucket_id = 'media' AND 
-  EXISTS (
-    SELECT 1 FROM public.admin_users 
-    WHERE id = auth.uid() AND role IN ('super_admin', 'admin', 'editor')
-  )
+  bucket_id = 'media' AND public.is_admin()
 );
 
 -- 5. Restrict delete access to authenticated admins only
@@ -50,9 +38,5 @@ ON storage.objects
 FOR DELETE 
 TO authenticated 
 USING (
-  bucket_id = 'media' AND 
-  EXISTS (
-    SELECT 1 FROM public.admin_users 
-    WHERE id = auth.uid() AND role IN ('super_admin', 'admin', 'editor')
-  )
+  bucket_id = 'media' AND public.is_admin()
 );
